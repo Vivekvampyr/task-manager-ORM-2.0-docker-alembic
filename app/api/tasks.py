@@ -1,4 +1,4 @@
-from fastapi import APIRouter,HTTPException,Depends, status
+from fastapi import APIRouter,HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.task import Task
@@ -23,8 +23,9 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     return task
 
 @router.get("",response_model=list[TaskResponse],status_code=status.HTTP_200_OK)
-def get_tasks(db: Session = Depends(get_db)):
-    statement = select(Task).where(Task.user_id == 1).order_by(Task.created_at.desc())
+def get_tasks(page: int = Query(default=1,ge=1), limit: int = Query(default=10,ge=1,le=100), db: Session = Depends(get_db)):
+    offset = (page - 1) * limit
+    statement = select(Task).where(Task.user_id == 1).order_by(Task.created_at.desc()).offset(offset).limit(limit)
     result = db.execute(statement)
     tasks = result.scalars().all()
     return tasks
