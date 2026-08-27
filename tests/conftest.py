@@ -73,3 +73,28 @@ def auth_headers(test_user):
     return {
         "Authorization": f"Bearer {token}"
     }
+
+@pytest.fixture
+def second_user(db):
+    user = User(
+        email="second@example.com",
+        password_hash=hash_password("testpassword123"),
+        first_name="Second",
+        last_name="User",
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+@pytest.fixture
+def second_auth_headers(second_user):
+    token = create_access_token(
+        data={"sub": str(second_user.id)}
+    )
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
