@@ -2,7 +2,7 @@ from fastapi import APIRouter,HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.task import Task
-from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate, TaskStatus
+from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate, TaskStatus, TaskPriority
 from sqlalchemy import select
 
 router = APIRouter(prefix="/tasks",tags=["Tasks"])
@@ -23,11 +23,13 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     return task
 
 @router.get("",response_model=list[TaskResponse],status_code=status.HTTP_200_OK)
-def get_tasks(page: int = Query(default=1,ge=1), limit: int = Query(default=10,ge=1,le=100),status: TaskStatus | None = None, db: Session = Depends(get_db)):
+def get_tasks(page: int = Query(default=1,ge=1), limit: int = Query(default=10,ge=1,le=100),status: TaskStatus | None = None, priority: TaskPriority | None = None, db: Session = Depends(get_db)):
     offset = (page - 1) * limit
     statement = select(Task).where(Task.user_id == 1)
     if status is not None:
         statement = statement.where(Task.status == status)
+    if priority is not None:
+        statement = statement.where(Task.priority == priority)
     statement = statement.order_by(Task.created_at.desc()).offset(offset).limit(limit)
     result = db.execute(statement)
     tasks = result.scalars().all()
