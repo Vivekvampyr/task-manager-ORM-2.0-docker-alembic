@@ -3,8 +3,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 class Settings(BaseSettings):
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
     DATABASE_URL: str
-    model_config = SettingsConfigDict(env_file=".env")
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 settings = Settings()
 
