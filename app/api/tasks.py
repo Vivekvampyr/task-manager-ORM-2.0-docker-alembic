@@ -1,0 +1,42 @@
+from fastapi import APIRouter,HTTPException,Depends, status
+from sqlalchemy.orm import Session
+from app.db.database import SessionLocal
+from app.models.task import Task
+from app.schemas.task import TaskCreate, TaskResponse
+from sqlalchemy import select
+
+router = APIRouter(prefix="/tasks",tags=["Tasks"])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.post("",response_model=TaskResponse,status_code=status.HTTP_201_CREATED)
+def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
+    task = Task(user_id=1,title=task_data.title,description=task_data.description,status=task_data.status,priority=task_data.priority,due_date=task_data.due_date)
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
+
+@router.get("",response_model=list[TaskResponse],status_code=status.HTTP_200_OK)
+def get_tasks(db: Session = Depends(get_db)):
+    statement = select(Task).where(Task.user_id == 1).order_by(Task.created_at.desc())
+    result = db.execute(statement)
+    tasks = result.scalars().all()
+    return tasks
+
+@router.get("/{task_id}",response_model=TaskResponse,status_code=status.HTTP_200_OK)
+def get_task(task_id:int, db: Session = Depends(get_db)):
+    statement = select(Task).where(Task.user_id==1,Task.id==task_id)
+    result = db.execute(statement)
+    task = result.scalar_one_or_none()
+    if task is None:
+        raise HTTPException(status_code=404,detail="Task Not Found")
+    return task
+
+
+
