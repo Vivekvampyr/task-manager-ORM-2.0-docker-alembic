@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 from app.db.database import engine
-from app.api import tasks
+from app.api import tasks,auth
 
 app = FastAPI(title="Task Manager API")
 app.include_router(tasks.router,prefix="/api")
+app.include_router(auth.router,prefix="/api")
 
 @app.get("/")
 def root():
