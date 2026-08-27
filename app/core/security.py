@@ -2,8 +2,11 @@ from pwdlib import PasswordHash
 import jwt
 from datetime import datetime, timedelta, timezone
 from app.core.config import settings
+from fastapi.security import OAuth2PasswordBearer
 
 password_hash = PasswordHash.recommended()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 def hash_password(password: str) -> str:
     return password_hash.hash(password)
