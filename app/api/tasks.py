@@ -52,5 +52,16 @@ def update_task(task_id: int,task_data: TaskUpdate , db: Session = Depends(get_d
     db.refresh(task)
     return task
 
+@router.delete("/{task_id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    statement = select(Task).where(Task.user_id==1,Task.id==task_id)
+    result = db.execute(statement)
+    task = result.scalar_one_or_none()
+    if task is None:
+        raise HTTPException(status_code=404,detail="Task not found")
+    db.delete(task)
+    db.commit()
+    return {"message": "task deleted successfully"}
+
 
 
