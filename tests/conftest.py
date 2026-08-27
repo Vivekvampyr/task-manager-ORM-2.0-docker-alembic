@@ -7,6 +7,8 @@ from app.main import app
 from app.core.config import settings
 from app.core.dependencies import get_db
 from app.db.database import Base
+from app.models.user import User
+from app.core.security import hash_password, create_access_token
 
 
 TEST_DATABASE_URL = settings.TEST_DATABASE_URL
@@ -46,3 +48,28 @@ def client(db):
         yield test_client
 
     app.dependency_overrides.clear()
+
+@pytest.fixture
+def test_user(db):
+    user = User(
+        email="test@example.com",
+        password_hash=hash_password("testpassword123"),
+        first_name="Test",
+        last_name="User",
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+@pytest.fixture
+def auth_headers(test_user):
+    token = create_access_token(
+        data={"sub": str(test_user.id)}
+    )
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
