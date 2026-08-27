@@ -21,6 +21,7 @@ def get_db():
         db.close()
 
 @router.post("/register",response_model=UserResponse,status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/minute")
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     statement = select(User).where(User.email == user_data.email)
     existing_user = db.scalar(statement)
@@ -33,7 +34,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return user
 
 @router.post("/login",response_model=Token)
-@limiter.limit("3/minute")
+@limiter.limit("5/minute")
 def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     statement = select(User).where(User.email == form_data.username)
     user = db.scalar(statement)
