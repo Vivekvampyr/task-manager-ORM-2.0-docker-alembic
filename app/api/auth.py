@@ -10,19 +10,13 @@ from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import create_access_token, verify_password
 from app.core.limiter import limiter
+from app.core.dependencies import get_db
 
 router = APIRouter(prefix="/auth",tags=["Authentication"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/register",response_model=UserResponse,status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/minute")
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
+def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     statement = select(User).where(User.email == user_data.email)
     existing_user = db.scalar(statement)
     if existing_user is not None:

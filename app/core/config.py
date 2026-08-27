@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
 
     DATABASE_URL: str
+    TEST_DATABASE_URL: str
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"

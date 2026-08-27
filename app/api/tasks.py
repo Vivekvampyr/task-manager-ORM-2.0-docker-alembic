@@ -7,15 +7,9 @@ from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate, TaskStatus, T
 from sqlalchemy import select
 from app.core.dependencies import get_current_user
 from app.models.user import User
+from app.core.dependencies import get_db
 
 router = APIRouter(prefix="/tasks",tags=["Tasks"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("",response_model=TaskResponse,status_code=status.HTTP_201_CREATED)
 def create_task(task_data: TaskCreate,current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
